@@ -1,0 +1,224 @@
+import processing.video.*;
+import java.awt.Frame;
+Capture cam;
+Capture cam2;
+PFrame f;
+secondApplet s;
+float bright_up = 1;
+PImage bright;
+PImage still;
+PImage background;
+PImage beach;
+boolean trigger = true;
+Ball[] b = new Ball[1];
+/**********************WEBCAM WINDOW**********************/
+void setup() 
+{  
+  frame.setTitle("WEBCAM");
+  size(1280, 720);
+  PFrame f = new PFrame();
+  cam = new Capture(this, width, height);
+  cam.start();     
+  for (int i = 0;i<b.length;i++)
+    b[i] = new Ball();
+}
+
+void draw()
+{ 
+  background(0, 0, 255);
+  if (cam.available())
+    cam.read();
+  if (trigger)
+    image(cam, 0, 0);
+  else {
+    still = loadImage("pic.jpg");
+    background = change_background(cam, still);
+    image(background, 0, 0);//draw new cam
+  } 
+ 
+  //bright = brightness_change(cam);
+  //image(bright, 0, 0);
+  
+ if(s.mousePressed)
+ { 
+   if (s.mouseX > 40 && s.mouseX < 340 && s.mouseY > 54 && s.mouseY < 102) 
+    {
+      println("Matthew");
+    }
+   
+   if (s.mouseX > 40 && s.mouseX < 340 && s.mouseY > 132 && s.mouseY < 180) 
+    {
+      println("Kyle");
+    }
+   
+   if (s.mouseX > 40 && s.mouseX < 340 && s.mouseY > 210 && s.mouseY < 258) 
+    {
+      println("Brittany");
+    }
+   
+   if (s.mouseX > 40 && s.mouseX < 340 && s.mouseY > 287 && s.mouseY < 337) 
+    {
+      println("Tarah");
+    } 
+    
+   if (s.mouseX > 40 && s.mouseX < 340 && s.mouseY > 366 && s.mouseY < 415) 
+    {
+      //bright_up += 0.5;
+      trigger = false;
+      //still = loadImage("pic.jpg");
+      //background = change_background(cam, still);
+    }
+ }
+    //for (int i =0; i<b.length;i++) b[i].display();
+   
+}
+
+
+PImage change_background(Capture vid, PImage img)
+{
+  
+  int thr = 100;
+  beach = loadImage("beach.jpg");
+  vid.loadPixels();
+  beach.loadPixels();
+  PImage target = createImage(vid.width, vid.height, RGB);
+  for(int i=0; i<vid.pixels.length; i++)
+  {
+    color c = vid.pixels[i];
+    float r = red(c);
+    float g = green(c);
+    float b = blue(c);
+    
+    color c1 = img.pixels[i];
+    float r1 = red(c1);
+    float g1 = green(c1);
+    float b1 = blue(c1);
+    
+    color c2 = beach.pixels[i];
+    float r2 = red(c2);
+    float g2 = green(c2);
+    float b2 = blue(c2);    
+    
+    //r is in range of r1
+    if((r1+thr >= r && r1-thr < r) && (g1+thr >= g && g1-thr < g) && (b1+thr >= b && b1-thr < b))
+      target.pixels[i] = color(r2, g2, b2);
+    else
+      target.pixels[i] = color(r, g, b);  
+  }
+  return target;
+}
+
+PImage brightness_change(Capture vid)
+{
+  vid.loadPixels();
+  PImage target = createImage(vid.width, vid.height, RGB);
+  for(int i=0; i<vid.pixels.length; i++)
+  {
+    color c = vid.pixels[i];
+    float r = red(c)*bright_up;
+    float g = green(c)*bright_up;
+    float b = blue(c)*bright_up;
+    if(r>255)
+      r = 255;
+    if(g>255)
+      g = 255;
+    if(b>255)
+      b = 255;
+    target.pixels[i] = color(r,g,b);
+  }
+  return target;
+}
+
+void mousePressed()
+{
+  println("You just saved a picture. ");
+  save("pic.jpg");
+}
+
+
+
+
+/**********************CONTROL PANEL WINDOW**********************/
+public class PFrame extends Frame
+{
+    public PFrame()
+    {
+      setTitle("CONTROL PANEL");
+      setBounds(30, 30, 400, 500);
+      s = new secondApplet();
+      add(s);
+      s.init();
+      show();
+    }
+}
+
+public class secondApplet extends PApplet
+{
+  String[] members = {"Matthew", "Kyle", "Brittany", "Tarah", "Geo"};
+  
+  public void setup()
+  {    
+  }
+
+  public void draw() 
+  {
+    background(255,0,0);  
+    rectMode(CENTER);
+    textAlign(CENTER, CENTER);
+    textSize(16);
+    int btnY = 78;
+    for(int i=0; i<5; i++)
+    {
+      fill(255);
+      rect(width/2, btnY, 300, 50);
+      fill(0);
+      text(members[i], width/2, btnY); 
+      btnY += 78;
+    }
+  }
+  
+  void mousePressed()
+  {
+  }
+  
+  void keyPressed()
+  {
+    if(key == 'r'){
+      trigger = true;
+      println(trigger);}
+  }
+  
+}
+/***********EXTRA*****************************/
+class Ball {
+  float r = random(0, 255);
+  float g = random(0, 255);
+  float b = random(0, 255);
+  color c = color(r, g, b);
+  float xpos, ypos;
+  float xspeed, yspeed;
+  float diameter;
+ 
+  Ball() {
+    //set diameter before position
+    diameter = 100;
+    xpos = random(diameter, width - diameter);
+    ypos = random(diameter, height - diameter);
+    xspeed = 10.0;
+    yspeed = 10.0;
+  }
+  
+  void display(){
+    fill(c);
+    ellipse(xpos, ypos, diameter, diameter);
+    xpos += xspeed;
+    ypos += yspeed;
+    this.bounce();
+  }
+  void bounce(){
+    if(xpos>width-diameter/2) xspeed = -xspeed;
+    else if(xpos<diameter/2)xspeed=-xspeed;
+    if (ypos>height-diameter/2) yspeed = -yspeed;
+    else if (ypos<diameter/2) yspeed = -yspeed;
+  }
+}

@@ -1,0 +1,27 @@
+boolean track(int x, int y, int z, color c) {
+  // ints x and y are positions, int z is the "diameter" or parameters of the shape we're tracking
+  if ((get(x, y) == c) && (get(x+z, y) == c) && (get(x-z, y) == c) && (get(x, y+z) == c) && (get(x, y-z) == c)) {return true;}
+  else {return false;}
+}
+
+void follow(int z, color c, color d) { 
+  //int z is the parameter of the shape (for the track() method)
+  for (int i = 0; i < displayWidth; i++) {
+    for (int j = 0; j < displayHeight; j++) {
+      if(track(i, j, z, c)){
+        for (int k = 10; k > 1; k--) {
+          xPoses[k-1] = xPoses[k-2]; //for example, xPoses[3] is what xPoses[2] used to be.
+          yPoses[k-1] = yPoses[k-2];
+        }
+        xPoses[0] = i;
+        yPoses[0] = j;
+      }
+    }
+  }
+  if(xPoses[8] != 0 || yPoses[8] !=0) {
+    g = xPoses[9];
+    h = yPoses[9];
+    fill(d);
+    ellipse(g, h, 5, 5);
+  }
+}

@@ -1,0 +1,20 @@
+boolean track(int x, int y, color c) {
+  if (get(x, y) == c) return true;
+  else return false;
+}
+
+void follow(int x, int y, int z, color c, color d) { 
+  if (track(x,y,c)){ //if current pixel is desired color
+    for (int i = -1; i < 2; i++) {
+      for (int j = -1; j < 2; j++) {
+        if (track(x+i, y+j, c)) { //check surrounding pixels for desired color
+          g = x+i; //set new x,
+          h = y+j; //set new y for recursion - new x/y pair should be lower right corner of colored area
+          set(x,y,d); //set following pixels to new color 
+          //(How to follow from variable direction/angle, instead of a set number of x/y pixels behind?)
+          follow(g,h,z,c,d); //follow new coordinates
+        }
+      }
+    }
+  }
+}

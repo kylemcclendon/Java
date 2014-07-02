@@ -1,0 +1,333 @@
+import processing.video.*;
+import java.awt.Frame;
+import java.util.Collections;
+Capture cam;
+PFrame f;
+secondApplet s;
+static final float STARTING_BRIGHTNESS = 1;
+float bright_up = STARTING_BRIGHTNESS;
+static final float COLOR_MATCH_THRESHOLD = 65;
+static final int STEP_SIZE = 8;
+PImage manipulatedFrame;
+color targetColor;
+ArrayList<Shape> shapes = new ArrayList<Shape>();
+int frameCounter = 0;
+static final int FRAMES_PER_UPDATE = 1024;
+//ViewState showState = ViewState.RAW_CAPTURE;
+PImage pikachu;
+
+/**********************WEBCAM WINDOW**********************/
+void setup() 
+{  
+  frame.setTitle("WEBCAM");
+  size(1280, 720);
+  PFrame f = new PFrame();
+  cam = new Capture(this, width, height);
+  cam.start();            
+  //targetColor = color(0, 255, 63);
+  targetColor = color(140, 40, 130);
+  pikachu = loadImage("pika.gif");
+}
+
+void draw()
+{ 
+  background(0, 0, 255);
+  if (cam.available())
+    cam.read();
+    
+  /*if (showState.equals(ViewState.RAW_CAPTURE)) {
+    image(cam, 0, 0);
+    return;
+  }*/
+
+  if (bright_up != STARTING_BRIGHTNESS)
+  {
+    manipulatedFrame = brightness_change(cam);
+  }
+  else {
+    manipulatedFrame = cam;
+  }
+  manipulatedFrame = trackObject(manipulatedFrame, targetColor);
+  image(manipulatedFrame, 0, 0);
+  
+  frameCounter++;
+  if (frameCounter < FRAMES_PER_UPDATE && shapes.size() > 0) {
+    Collections.sort(shapes);
+    Shape biggestShape = shapes.get(0);
+    biggestShape.shapeColor = color(255, 0, 0);
+    int x = (biggestShape.minX + biggestShape.maxX)/2;
+    int y = (biggestShape.minY + biggestShape.maxY)/2;
+    stroke(0, 0, 255);
+    rect(x-2, y-2, 3, 3);
+    image(pikachu, x, y);
+  }
+
+  if (s.mousePressed)
+  { 
+    handleSecondaryWindowMousePress();
+  }
+}
+
+void saveScreenshot()
+{
+  saveFrame("screenshots/image####.png");
+}
+
+PImage trackObject(PImage img, color c)
+{
+  // TODO unstub
+  PImage newImg = binarize(img);
+  grassFire(newImg);
+  return newImg;
+}
+
+PImage binarize(PImage bin) {
+  PImage newBin = createImage(bin.width, bin.height, RGB);
+  bin.loadPixels();
+  newBin.loadPixels();
+  for (int i = 0; i < bin.pixels.length; i++) {
+    if (euclideanDistance(bin.pixels[i], targetColor) < COLOR_MATCH_THRESHOLD) {
+      newBin.pixels[i] = color(0, 0, 0);
+    }
+    else
+    {
+      newBin.pixels[i] = color(255, 255, 255);
+    }
+  }
+  newBin.updatePixels();
+  return newBin;
+}
+
+float euclideanDistance(color c1, color c2) {
+  float r = sq(red(c1) - red(c2));
+  float g = sq(green(c1) - green(c2));
+  float b = sq(blue(c1) - blue(c2));
+  return sqrt(r+g+b);
+}
+
+void mouseReleased() {
+  color ci = cam.get(mouseX, mouseY);
+  color cf = manipulatedFrame.get(mouseX, mouseY);
+  /*println(red(ci), green(ci), blue(ci), "--", euclideanDistance(ci, targetColor));*/
+  targetColor = ci;
+}
+
+void handleSecondaryWindowMousePress()
+{
+  if (s.mouseX > 40 && s.mouseX < 340 && s.mouseY > 54 && s.mouseY < 102) 
+  {
+    println("Matthew");
+    //showState = ViewState.RAW_CAPTURE;
+  }
+  else if (s.mouseX > 40 && s.mouseX < 340 && s.mouseY > 132 && s.mouseY < 180) 
+  {
+    println("Kyle");
+    //showState = ViewState.BINARIZED;
+  }
+  else if (s.mouseX > 40 && s.mouseX < 340 && s.mouseY > 210 && s.mouseY < 258) 
+  {
+    println("Brittany");
+    //showState = ViewState.MANIPULATED;
+  }
+  else if (s.mouseX > 40 && s.mouseX < 340 && s.mouseY > 287 && s.mouseY < 337) 
+  {
+    saveScreenshot();
+  } 
+  else if (s.mouseX > 40 && s.mouseX < 340 && s.mouseY > 366 && s.mouseY < 415) 
+  {
+    bright_up += 0.5;
+  }
+}
+
+PImage brightness_change(Capture vid)
+{
+  vid.loadPixels();
+  PImage target = createImage(vid.width, vid.height, RGB);
+  for (int i = 0; i < vid.pixels.length; i++)
+  {
+    color c = vid.pixels[i];
+    float r = red(c)*bright_up;
+    float g = green(c)*bright_up;
+    float b = blue(c)*bright_up;
+    if (r > 255)
+      r = 255;
+    if (g > 255)
+      g = 255;
+    if (b > 255)
+      b = 255;
+    target.pixels[i] = color(r, g, b);
+  }
+  return target;
+}
+
+void grassFire(PImage img) {
+  shapes = new ArrayList<Shape>();
+  for (int y = 0; y < img.height; y += STEP_SIZE)
+  {
+    for (int x = 0; x < img.width; x += STEP_SIZE)
+    {
+      if (img.get(x, y) == color(0)) {
+        color SC = color(0);
+        int shapeNum = shapes.size();
+
+        /*if(shapeNum == 0){
+         float r = random(10, 250);
+         float g = random(10, 250);
+         float b = random(10, 250);
+         Shape newShape =  new Shape(x, y, x, y, shapeNum, color(r, g, b));
+         shapes.add(newShape);
+         }*/
+
+        boolean found = false;
+
+        for (int i = 0; i < shapes.size(); i++) {
+          if (x <= shapes.get(i).maxX && x >= shapes.get(i).minX &&
+            y <= shapes.get(i).maxY && y >= shapes.get(i).minY) {
+            //Part of a shape
+            //println("part");
+            shapeNum = i;
+            SC = shapes.get(i).shapeColor;
+            found = true;
+            break;
+          }
+        }
+
+        if (!found) {
+          //println("new");
+          float r = random(10, 250);
+          float g = random(10, 250);
+          float b = random(10, 250);
+          Shape newShape =  new Shape(x, x, y, y, shapeNum, color(r, g, b));
+          SC = color(r, g, b);
+          shapes.add(newShape);
+        }
+
+
+        label(img, x, y, SC, shapeNum);
+        //println(shapes.get(shapeNum).minX, shapes.get(shapeNum).maxX, shapes.get(shapeNum).minY, shapes.get(shapeNum).maxY);
+        //System.exit(0);
+      }
+    }
+  }
+}
+
+void label(PImage img, int x, int y, color p, int shapeNum) {
+  if (red(img.get(x, y)) == 0)
+  {
+    //println(x, y);
+    img.set(x, y, p);
+    if (x < shapes.get(shapeNum).minX) {
+      shapes.get(shapeNum).minX = x;
+    }
+    if (x > shapes.get(shapeNum).maxX) {
+      shapes.get(shapeNum).maxX = x;
+    }
+    if (y > shapes.get(shapeNum).maxY) {
+      shapes.get(shapeNum).maxY = y;
+    }
+
+    if (x-7 >= 0) {
+      label(img, x-7, y, p, shapeNum);
+    }
+    if (x+7 < img.width) {
+      label(img, x+7, y, p, shapeNum);
+    }
+    /*if(y-8 >= 0){
+     label(img, x, y-8, p);
+     }*/
+    if (y+7 < img.height) {
+      label(img, x, y+7, p, shapeNum);
+    }
+  }
+}
+
+void keyPressed() {
+  if (key == ' ') {
+    Collections.sort(shapes);
+    shapes.get(0).shapeColor = color(255, 0, 0);
+    println(shapes);
+  }
+}
+
+/**********************CONTROL PANEL WINDOW**********************/
+public class PFrame extends Frame
+{
+  public PFrame()
+  {
+    setTitle("CONTROL PANEL");
+    setBounds(30, 30, 400, 500);
+    s = new secondApplet();
+    add(s);
+    s.init();
+    show();
+  }
+}
+
+public class secondApplet extends PApplet
+{
+  String[] members = {
+    "Matthew", "Kyle", "Brittany", "Save Screenshot", "Increase Brightness"
+  };
+
+  public void setup()
+  {
+  }
+
+  public void draw() 
+  {
+    background(255, 0, 0);  
+    rectMode(CENTER);
+    textAlign(CENTER, CENTER);
+    textSize(16);
+    int btnY = 78;
+    for (int i=0; i<5; i++)
+    {
+      fill(255);
+      rect(width/2, btnY, 300, 50);
+      fill(0);
+      text(members[i], width/2, btnY); 
+      btnY += 78;
+    }
+  }
+
+  void mousePressed()
+  {
+  }
+}
+
+class Shape implements Comparable<Shape> {
+  int minX;
+  int maxX;
+  int minY;
+  int maxY;
+  int shapeNum;
+  color shapeColor;
+
+  public Shape(int lx, int hx, int ly, int hy, int sN, color c) {
+    minX = lx;
+    maxX = hx;
+    minY = ly;
+    maxY = hy;
+    shapeNum = sN;
+    shapeColor = c;
+  }
+
+  public String toString() {
+    StringBuilder s = new StringBuilder();
+    s.append("[Shape " + shapeNum + ": X");
+    s.append(minX + "-" + maxX + ", Y");
+    s.append(minY + "-" + maxY + ", #");
+    s.append(hex(shapeColor).substring(2) + "]");
+    return s.toString();
+  }
+  
+  public Integer getSize() {
+    return (maxX-minX) * (maxY-minY);
+  }
+  
+  public int compareTo(Shape other) {
+    // This is intentionally reversed to make the largest shape
+    // sort to the front of the list.
+    return other.getSize().compareTo(this.getSize());
+  }
+}
