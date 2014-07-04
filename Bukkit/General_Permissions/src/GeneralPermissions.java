@@ -9,7 +9,9 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -31,7 +33,7 @@ public final class GeneralPermissions extends JavaPlugin implements PermissionsP
 	public static YamlConfiguration namesSettings;
 	public static HashMap<UUID, PermissionAttachment> players = new HashMap<UUID, PermissionAttachment>();
 	public static HashMap<UUID, String> prefixes = new HashMap<UUID, String>();
-	public static HashMap<UUID, ArrayList<String>> permissions = new HashMap<UUID, ArrayList<String>>();
+	public static HashMap<UUID, HashSet<String>> permissions = new HashMap<UUID, HashSet<String>>();
 	public static HashMap<String, UUID> uuids = new HashMap<String, UUID>();
 	private final GeneralPermissionsReloadEvents gpre = new GeneralPermissionsReloadEvents(this);
 	public static String[] groupNames;
@@ -145,12 +147,14 @@ public final class GeneralPermissions extends JavaPlugin implements PermissionsP
 							PermissionAttachment attachment = p.addAttachment(x);
 							players.put(pu, attachment);
 
-							ArrayList<String> perms = GeneralGetPermissions.collectPermissions(pu, world);
+							Set<String> perms = GeneralGetPermissions.collectPermissions(pu, world);
 
 							for(String permission : perms){
 								attachment.setPermission(permission, true);
 							}
 						}
+
+						System.out.println("All permissions reloaded");
 					}
 				}, 2*20);
 			}
@@ -340,6 +344,9 @@ public final class GeneralPermissions extends JavaPlugin implements PermissionsP
 				group = new File(file, modGroup + ".txt");
 				if(!group.exists()){
 					BufferedWriter output = new BufferedWriter(new FileWriter(group));
+					output.write("#Add all permissions after the 'Permissions:' line. Do not Modify any other lines");
+					output.newLine();
+					output.newLine();
 					output.write("Permissions:");
 					output.newLine();
 					output.newLine();
@@ -356,17 +363,25 @@ public final class GeneralPermissions extends JavaPlugin implements PermissionsP
 	//All sk89q hasPermission methods default here
 	@Override
 	public boolean hasPermission(String player, String permission){
+		System.out.println(permission);
 		UUID pu = uuids.get(player);
 		boolean has = false;
 		String[] full = permission.split("\\.");
 		String combine = full[0];
 		String star = "*";
+
 		if(permissions.get(pu) == null){
 			return false;
 		}
-		ArrayList<String> playerPerms = permissions.get(pu);
 
-		if(combine.equals("*") || playerPerms.contains("+"+combine+".*")){
+		Set<String> playerPerms = permissions.get(pu);
+
+		/*System.out.println(permission);
+		for(String per : playerPerms){
+			System.out.println(per);
+		}*/
+
+		if(combine.equals("+ *") || playerPerms.contains("+"+combine+".*")){
 			has = true;
 		}
 		if(!playerPerms.contains("-" + star) && !playerPerms.contains("-" + combine)){
@@ -450,4 +465,5 @@ public final class GeneralPermissions extends JavaPlugin implements PermissionsP
 		//Offline player, we don't care
 		return null;
 	}
+
 }

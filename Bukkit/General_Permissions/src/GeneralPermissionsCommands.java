@@ -6,9 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -24,7 +24,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class GeneralPermissionsCommands implements CommandExecutor{
 	private final GeneralPermissions plugin;
 	public static File playersFolder = new File(GeneralPermissions.dFolder, "Players");
-	public static HashMap<UUID, String> ranks = new HashMap<UUID, String>();
+	//public static HashMap<UUID, String> ranks = new HashMap<UUID, String>();
 	private static HashMap<UUID, Boolean> spamDelay = new HashMap<UUID, Boolean>();
 
 	//GeneralPermissionsCommands Constructor
@@ -73,6 +73,9 @@ public class GeneralPermissionsCommands implements CommandExecutor{
 				}
 
 				if((args[0].equalsIgnoreCase("reload") || args[0].equalsIgnoreCase("r"))){
+					if(!(sender instanceof Player)){
+						return true;
+					}
 					Player self = (Player) sender;
 					final UUID pu = self.getUniqueId();
 					if(!spamDelay.containsKey(pu)){
@@ -83,7 +86,7 @@ public class GeneralPermissionsCommands implements CommandExecutor{
 							self.sendMessage(ChatColor.RED + "You can only reload permissions every 5 minutes!");
 							return true;
 						}
-						spamDelay.replace(pu, true);
+						spamDelay.put(pu, true);
 					}
 					reloadPlayer(self, self.getWorld().getName());
 					sender.sendMessage(ChatColor.GOLD + "Permissions successfully reloaded!");
@@ -93,7 +96,7 @@ public class GeneralPermissionsCommands implements CommandExecutor{
 					{
 						@Override
 						public void run(){
-							spamDelay.replace(pu, false);
+							spamDelay.put(pu, false);
 						}
 					}, 300*20);
 
@@ -303,7 +306,7 @@ public class GeneralPermissionsCommands implements CommandExecutor{
 
 		//Adds new permissions
 		PermissionAttachment attachment2 = player.addAttachment(plugin);
-		ArrayList<String> newperms = GeneralGetPermissions.collectPermissions(pu, world);
+		Set<String> newperms = GeneralGetPermissions.collectPermissions(pu, world);
 		for(String perm : newperms){
 			attachment2.setPermission(perm, true);
 		}
@@ -312,13 +315,6 @@ public class GeneralPermissionsCommands implements CommandExecutor{
 
 	//Parses player file and acquires the assigned rank
 	public static String getRank(UUID pu){
-
-		//If player's rank exists already in HashMap, get from there (much faster and removes extraneous file parsing)
-		if(ranks.containsKey(pu)){
-			return ranks.get(pu);
-		}
-
-		//If player's rank wasn't in the HashMap, parse their player file
 		File playerFile = new File(playersFolder, pu + ".txt");
 		String rest = "";
 		if (playerFile.exists()){
@@ -326,25 +322,17 @@ public class GeneralPermissionsCommands implements CommandExecutor{
 			try{
 				scan = new Scanner(playerFile);
 				String rank = scan.nextLine();
+				scan.close();
 				int i = rank.indexOf(' ');
-				if(i == -1){
-					rest = "";
-				}
-				else{
+				if(i != -1){
 					rest = rank.substring(i + 1);
 				}
-				scan.close();
 			}
 			catch (FileNotFoundException e){
 				e.printStackTrace();
 			}
 		}
 		rest = rest.toLowerCase();
-
-		if(!rest.equals("")){
-			//If rank isn't empty, add to HashMap
-			ranks.put(pu, rest);
-		}
 
 		return rest;
 	}
@@ -370,8 +358,6 @@ public class GeneralPermissionsCommands implements CommandExecutor{
 			FileWriter writer = new FileWriter(playerFile);
 			writer.write(newtext);
 			writer.close();
-
-			ranks.replace(player, newRank.toLowerCase());
 		}
 		catch (IOException ioe){
 			ioe.printStackTrace();

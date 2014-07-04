@@ -5,14 +5,13 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -64,7 +63,7 @@ public class GeneralPermissionsReloadEvents implements Listener{
 
 		PermissionAttachment attachment = p.addAttachment(plugin);
 
-		ArrayList<String> perms = GeneralGetPermissions.collectPermissions(pu, world);
+		Set<String> perms = GeneralGetPermissions.collectPermissions(pu, world);
 
 		for(String permission : perms)
 		{
@@ -77,6 +76,8 @@ public class GeneralPermissionsReloadEvents implements Listener{
 		String name = YC.getString(pu.toString());
 
 		if(name == null || !(name.equals(p.getName()))){
+			p.sendMessage(ChatColor.GOLD + "Hello player. Welcome to the ZU Server. If you have been here before and were a member before but are now a guest, please let us know, and we will fix the issue!");
+			p.sendMessage(ChatColor.GOLD + "If no op is online, please put in all caps (once only please): 'I AM A MEMBER'. If we agree that you were a member before, we will promote you as soon as possible");
 			YC.set(pu.toString(), p.getName());
 			try {
 				YC.save(GeneralPermissions.namesFile);
@@ -114,13 +115,13 @@ public class GeneralPermissionsReloadEvents implements Listener{
 
 	//Handles when a player quits
 	public void onPlayerQuit(PlayerQuitEvent event){
-		removePlayer(event);
+		removePlayer(event.getPlayer());
 	}
 
 	//Handles when a player is kicked
 	@EventHandler
 	public void onPlayerKick(PlayerKickEvent event){
-		removePlayer(event);
+		removePlayer(event.getPlayer());
 	}
 
 	//Handles when a player changes worlds
@@ -149,7 +150,7 @@ public class GeneralPermissionsReloadEvents implements Listener{
 		PermissionAttachment attachment2 = p.addAttachment(plugin);
 		GeneralPermissions.players.put(pu, attachment2);
 
-		ArrayList<String> perms = GeneralGetPermissions.collectPermissions(pu, world);
+		Set<String> perms = GeneralGetPermissions.collectPermissions(pu, world);
 
 		for(String permission : perms)
 		{
@@ -291,8 +292,7 @@ public class GeneralPermissionsReloadEvents implements Listener{
 	}
 
 	//Remove permissions and prefixes from player
-	private void removePlayer(Event event){
-		Player p = ((Player) event).getPlayer();
+	private void removePlayer(Player p){
 		UUID pu = GeneralPermissions.uuids.get(p.getName());
 		GeneralPermissions.uuids.remove(p.getName());
 		PermissionAttachment attachment = GeneralPermissions.players.get(pu);
