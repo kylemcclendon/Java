@@ -9,31 +9,28 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
-public class HorseTeleport implements Listener
+public final class HorseTeleport implements Listener
 {
 	@EventHandler
-	public void onHorseTP(PlayerCommandPreprocessEvent event)
-	{
+	public void onHorseTP(PlayerCommandPreprocessEvent event){
 		String input = event.getMessage();
-		if((!event.getPlayer().isOp()) && (input.equalsIgnoreCase("/tp d") || input.equalsIgnoreCase("/tp dd") || input.equalsIgnoreCase("/tp dd6") || input.equalsIgnoreCase("/tp dd62") || input.equalsIgnoreCase("/tp dd622")))
-		{
+		if((!event.getPlayer().isOp()) && (input.equalsIgnoreCase("/tp d") || input.equalsIgnoreCase("/tp dd") || input.equalsIgnoreCase("/tp dd6") || input.equalsIgnoreCase("/tp dd62") || input.equalsIgnoreCase("/tp dd622"))){
 			event.getPlayer().sendMessage(ChatColor.RED + "You don't have permission to warp to this person.");
 			event.setCancelled(true);
 		}
-		if(input.startsWith("/tp") || input.startsWith("/warp") || input.startsWith("/home") || input.startsWith("/spawn"))
-		{
+		if(input.startsWith("/tp") || input.startsWith("/warp") || input.startsWith("/home") || input.startsWith("/spawn")){
+			//If valid teleporting command
 			Player p = event.getPlayer();
-			if(p.isInsideVehicle() && p.getVehicle().getType() == EntityType.HORSE)
-			{
+			if(p.isInsideVehicle() && p.getVehicle().getType() == EntityType.HORSE){
+				//If player is on a horse
 				Horse h = (Horse) p.getVehicle();
-				if(h.isTamed())
-				{
+				if(h.isTamed()){
+					//If the horse is tamed
 					p.leaveVehicle();
 					String message = event.getMessage().substring(1);
 					World w = p.getWorld();
 					p.performCommand(message);
-					if(w == p.getWorld())
-					{
+					if(w == p.getWorld()){
 						h.teleport(p);
 					}
 					event.setCancelled(true);

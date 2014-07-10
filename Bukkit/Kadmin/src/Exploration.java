@@ -7,65 +7,77 @@ import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
-public class Exploration implements Runnable
-{
+public final class Exploration implements Runnable{
+	//Checks if players are out of bounds of the map
+	boolean OOB = false;
+
 	@Override
-	public void run() 
-	{
-		while(true)
-		{
-			try
-			{
+	public void run(){
+		//Thread
+		while(true){
+			//Run every 10 seconds
+			try{
 				Thread.sleep(10000);
 			}
-			catch(InterruptedException ex)
-			{
+			catch(InterruptedException ex){
 				ex.printStackTrace();
 			}
-			// check all players:
-			for (Player player : Bukkit.getServer().getOnlinePlayers()) 
-			{
-				if(!player.isOp())
-				{
+
+			for (Player player : Bukkit.getServer().getOnlinePlayers()){
+				//Check each player
+				if(!player.isOp()){
 					// if not in bounds:
 					Location location = player.getLocation();
 					double x = location.getX();
 					double z = location.getZ();
-					int newX;
-					int newZ;
+					int newX = (int) x;
+					int newZ = (int) z;
 
-					if(x > 8000 || x < -13000 || z > 13200 || z < -7200)
-					{
-						if(x > 8000)
-						{
-							newX = 8000;
+					if(location.getWorld().getName().equals("Hyrule")){
+						//In Hyrule
+						if(x > 510 || x < -880 || z > 990 || z < -400){
+							//Out of bounds
+
+							OOB = true;
+							if(x > 510){
+								newX = 510;
+							}
+							else if(x < -880){
+								newX = -880;
+							}
+
+							if(z > 990){
+								newZ = 990;
+							}
+							else if(z < -400){
+								newZ = -400;
+							}
 						}
-						else if(x < -13000)
-						{
-							newX = -13000;
+					}
+					else if(x > 15000 || x < -15000 || z > 15000 || z < -15000){
+						//Different world besides Hyrule and out of bounds
+
+						OOB = true;
+						if(x > 15000){
+							newX = 15000;
 						}
-						else
-						{
-							newX = (int)Math.floor(x);
+						else if(x < -15000){
+							newX = -15000;
 						}
 
-						if(z < -7200)
-						{
-							newZ = -7200;
+						if(z < -15000){
+							newZ = -15000;
 						}
-						else if(z > 13000)
-						{
-							newZ = 13000;
+						else if(z > 15000){
+							newZ = 15000;
 						}
-						else
-						{
-							newZ = (int)Math.floor(z);
-						}
+					}
 
-						// to be sure..
+					if(OOB){
+						//If out of bounds
 						Entity e = null;
-						if(player.isInsideVehicle())
-						{
+						if(player.isInsideVehicle()){
+							//Store vehicle (cart, horse, etc) in e
 							e = player.getVehicle();
 						}
 						player.leaveVehicle();
@@ -77,11 +89,13 @@ public class Exploration implements Runnable
 
 						//woosh
 						player.teleport(new Location(world, newX, newY, newZ, location.getYaw(), location.getPitch()));
-						if(e != null)
-						{
+
+						if(e != null){
+							//Teleport entity to player
 							e.teleport(player);
 						}
 						player.sendMessage(ChatColor.RED + "You've reached the edge of the explorable world!");
+						OOB = false;
 					}
 				}
 			}
