@@ -2,12 +2,12 @@ package net.kylemc.generalpermissions;
 
 import java.util.Arrays;
 
-public class Utils{
-	public static String OS = System.getProperty("os.name").contains("Windows") ? "\r\n" : "\n";
+public final class Utils{
+	public final static String OS = System.getProperty("os.name").contains("Windows") ? "\r\n" : "\n";
 
-	public static String ranks = "";
+	private static String ranks = "";
 
-	public static void initRanks(){
+	public final static void initRanks(){
 		ranks = "";
 		if(GeneralPermissions.groupNames.length < 1){
 			return;
@@ -21,8 +21,12 @@ public class Utils{
 		}
 	}
 
+	public final static String getRanks(){
+		return ranks;
+	}
+
 	//Method to check if a string is in an array of strings
-	public static boolean contains(String type, String[] array){
+	public final static boolean contains(String type, String[] array){
 		if(array.length > 39 && !array[0].equals("")){
 			if(Arrays.binarySearch(array, type) != -1){
 				return true;

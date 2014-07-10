@@ -30,7 +30,7 @@ import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.permissions.PermissionAttachment;
 
-public class GeneralPermissionsReloadEvents implements Listener{
+public final class GeneralPermissionsReloadEvents implements Listener{
 	private final GeneralPermissions plugin;
 	private final String[] creatures = {"MAGMA_CUBE","GHAST"};
 
@@ -292,7 +292,7 @@ public class GeneralPermissionsReloadEvents implements Listener{
 	}
 
 	//Remove permissions and prefixes from player
-	private void removePlayer(Player p){
+	private final void removePlayer(Player p){
 		UUID pu = GeneralPermissions.uuids.get(p.getName());
 		GeneralPermissions.uuids.remove(p.getName());
 		PermissionAttachment attachment = GeneralPermissions.players.get(pu);

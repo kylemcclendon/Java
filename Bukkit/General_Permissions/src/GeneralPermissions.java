@@ -28,20 +28,20 @@ import com.sk89q.wepif.PermissionsProvider;
 
 public final class GeneralPermissions extends JavaPlugin implements PermissionsProvider{
 	private File settingsFile;
-	public static File namesFile;
-	public YamlConfiguration settings;
-	public static YamlConfiguration namesSettings;
-	public static HashMap<UUID, PermissionAttachment> players = new HashMap<UUID, PermissionAttachment>();
-	public static HashMap<UUID, String> prefixes = new HashMap<UUID, String>();
-	public static HashMap<UUID, HashSet<String>> permissions = new HashMap<UUID, HashSet<String>>();
-	public static HashMap<String, UUID> uuids = new HashMap<String, UUID>();
-	private final GeneralPermissionsReloadEvents gpre = new GeneralPermissionsReloadEvents(this);
-	public static String[] groupNames;
-	public static String[] modNames;
-	public static String[] bbl;
-	public static String[] bwl;
-	public static File dFolder;
+	private YamlConfiguration settings;
+	private static YamlConfiguration namesSettings;
+	static File namesFile;
+	static HashMap<UUID, PermissionAttachment> players = new HashMap<UUID, PermissionAttachment>();
+	static HashMap<UUID, String> prefixes = new HashMap<UUID, String>();
+	static HashMap<UUID, HashSet<String>> permissions = new HashMap<UUID, HashSet<String>>();
+	static HashMap<String, UUID> uuids = new HashMap<String, UUID>();
+	static String[] groupNames;
+	static String[] modNames;
+	static String[] bbl;
+	static String[] bwl;
+	static File dFolder;
 	private boolean enabled = false;
+	private final GeneralPermissionsReloadEvents gpre = new GeneralPermissionsReloadEvents(this);
 
 	//Called when GeneralPermissions loads
 	@Override
@@ -49,7 +49,6 @@ public final class GeneralPermissions extends JavaPlugin implements PermissionsP
 		for(Player p: Bukkit.getServer().getOnlinePlayers()){
 			uuids.put(p.getName(), p.getUniqueId());
 		}
-
 		dFolder = getDataFolder();
 		final Plugin x = this;
 
@@ -185,7 +184,7 @@ public final class GeneralPermissions extends JavaPlugin implements PermissionsP
 	}
 
 	//Saves settings file
-	private boolean saveSettings(){
+	private final boolean saveSettings(){
 		if (!settingsFile.exists()){
 			settingsFile.getParentFile().mkdirs();
 		}
@@ -200,7 +199,7 @@ public final class GeneralPermissions extends JavaPlugin implements PermissionsP
 	}
 
 	//Fills in global arrays
-	private void checkSettings(){
+	private final void checkSettings(){
 		if( settings.getString("groups") == null || settings.getString("groups").contains("#")){
 			groupNames = new String[] {""};
 		}
@@ -233,7 +232,7 @@ public final class GeneralPermissions extends JavaPlugin implements PermissionsP
 	}
 
 	//Creates each world folder the server has
-	private boolean createWorldFolders(List<String> worldnames){
+	private final boolean createWorldFolders(List<String> worldnames){
 		File worldsFolder = new File(dFolder, "Worlds");
 		File newWorld;
 		for(String world : worldnames){
@@ -254,7 +253,7 @@ public final class GeneralPermissions extends JavaPlugin implements PermissionsP
 	}
 
 	//Creates each group file from the groupNames and modNames lists, if any specified
-	private boolean createGroupFiles(){
+	private final boolean createGroupFiles(){
 		File groupsFolder = new File(getDataFolder(),  "Groups");
 		File newGroup;
 		for(int i = 0; i < groupNames.length; i++){
@@ -292,7 +291,7 @@ public final class GeneralPermissions extends JavaPlugin implements PermissionsP
 	}
 
 	//Creates default group files for each group in Groups directory.
-	private void writeDefaultGroup(File file){
+	private final void writeDefaultGroup(File file){
 		BufferedWriter writer = null;
 		try{
 			writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "utf-8"));
@@ -312,7 +311,7 @@ public final class GeneralPermissions extends JavaPlugin implements PermissionsP
 	}
 
 	//Creates default group files for each world directory
-	private void writeGroups(File file){
+	private final void writeGroups(File file){
 		File group;
 		for(String newGroup : groupNames){
 			if(newGroup.equals("")){
@@ -362,8 +361,7 @@ public final class GeneralPermissions extends JavaPlugin implements PermissionsP
 
 	//All sk89q hasPermission methods default here
 	@Override
-	public boolean hasPermission(String player, String permission){
-		System.out.println(permission);
+	public final boolean hasPermission(String player, String permission){
 		UUID pu = uuids.get(player);
 		boolean has = false;
 		String[] full = permission.split("\\.");
@@ -415,14 +413,14 @@ public final class GeneralPermissions extends JavaPlugin implements PermissionsP
 
 	//sk89q method to check permission in a world
 	@Override
-	public boolean hasPermission(String worldName, String player, String permission){
+	public final boolean hasPermission(String worldName, String player, String permission){
 		return hasPermission(player, permission);
 	}
 
 	//sk89q method to check if a player is in a group
 	@Override
 	@SuppressWarnings("deprecation")
-	public boolean inGroup(String player, String group){
+	public final boolean inGroup(String player, String group){
 		UUID pu = Bukkit.getOfflinePlayer(player).getUniqueId();
 		String rank = GeneralPermissionsCommands.getRank(pu).toLowerCase();
 		if(rank.equals(group.toLowerCase())){
@@ -433,35 +431,35 @@ public final class GeneralPermissions extends JavaPlugin implements PermissionsP
 
 	//sk89q method to get the groups a player is part of
 	@Override
-	public String[] getGroups(String player){
+	public final String[] getGroups(String player){
 		//String rank = GeneralPermissionsCommands.getRank(pu).toLowerCase();
 		return new String[] {"None"};
 	}
 
 	//sk89q method to check if a player has permission
 	@Override
-	public boolean hasPermission(OfflinePlayer player, String permission){
+	public final boolean hasPermission(OfflinePlayer player, String permission){
 		//Offline player, we don't care
 		return hasPermission(player.getPlayer().getName(), permission);
 	}
 
 	//sk89q method to check if a player has permission
 	@Override
-	public boolean hasPermission(String worldName, OfflinePlayer player, String permission){
+	public final boolean hasPermission(String worldName, OfflinePlayer player, String permission){
 		//Offline player, we don't care
 		return hasPermission(player.getPlayer().getName(), permission);
 	}
 
 	//sk89q method to check if a player is in a group
 	@Override
-	public boolean inGroup(OfflinePlayer player, String group){
+	public final boolean inGroup(OfflinePlayer player, String group){
 		//Offline player, we don't care
 		return false;
 	}
 
 	//sk89q method to get the groups a player is a part of
 	@Override
-	public String[] getGroups(OfflinePlayer player){
+	public final String[] getGroups(OfflinePlayer player){
 		//Offline player, we don't care
 		return null;
 	}

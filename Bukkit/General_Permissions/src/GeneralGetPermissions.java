@@ -16,15 +16,15 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.permissions.Permission;
 
-public class GeneralGetPermissions{
+public final class GeneralGetPermissions{
 
 	//HashMap to hold wildcard permissions for pseudo-caching
-	static HashMap<String, Set<String>> Wildcards = new HashMap<String, Set<String>>();
+	private static HashMap<String, Set<String>> Wildcards = new HashMap<String, Set<String>>();
 	//Set that holds all the server's permissions
-	static Set<Permission> serverPermissions = Bukkit.getPluginManager().getPermissions();
+	private static Set<Permission> serverPermissions = Bukkit.getPluginManager().getPermissions();
 
 	//Collects permission nodes and returns the list of "positive" permissions
-	public static HashSet<String> collectPermissions(UUID pu, String world){
+	public final static HashSet<String> collectPermissions(UUID pu, String world){
 		HashSet<String> addPermissions = new HashSet<String>();
 		HashSet<String> removePermissions = new HashSet<String>();
 		HashSet<String> storedPermissions = new HashSet<String>();
@@ -135,7 +135,7 @@ public class GeneralGetPermissions{
 	}
 
 	//Method to parse through the files for permission nodes
-	private static void parseFiles(File f, Set<String> addPermissions, Set<String> removePermissions, Set<String> storedPermissions) throws FileNotFoundException{
+	private final static void parseFiles(File f, Set<String> addPermissions, Set<String> removePermissions, Set<String> storedPermissions) throws FileNotFoundException{
 		BufferedReader br = new BufferedReader(new FileReader(f));
 		String line = null;
 		String text = "";
@@ -196,7 +196,7 @@ public class GeneralGetPermissions{
 	}
 
 	//Method to handle Wildcard Permissions (.* permissions)
-	private static Set<String> wildcardPermissions(String wild){
+	private final static Set<String> wildcardPermissions(String wild){
 		if(Wildcards.containsKey(wild)){
 			//This wildcard has been cached already
 			return Wildcards.get(wild);

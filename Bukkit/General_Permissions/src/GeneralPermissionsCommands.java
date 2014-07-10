@@ -21,9 +21,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class GeneralPermissionsCommands implements CommandExecutor{
+public final class GeneralPermissionsCommands implements CommandExecutor{
 	private final GeneralPermissions plugin;
-	public static File playersFolder = new File(GeneralPermissions.dFolder, "Players");
+	static File playersFolder = new File(GeneralPermissions.dFolder, "Players");
 	//public static HashMap<UUID, String> ranks = new HashMap<UUID, String>();
 	private static HashMap<UUID, Boolean> spamDelay = new HashMap<UUID, Boolean>();
 
@@ -55,12 +55,13 @@ public class GeneralPermissionsCommands implements CommandExecutor{
 				}
 
 				if(args[0].equalsIgnoreCase("ranks")){
-					if(Utils.ranks.equals("")){
+					String r = Utils.getRanks();
+					if(r.equals("")){
 						sender.sendMessage(ChatColor.GOLD + "No ranks");
 						return true;
 					}
 
-					sender.sendMessage(ChatColor.GOLD + Utils.ranks);
+					sender.sendMessage(ChatColor.GOLD + r);
 					return true;
 				}
 
@@ -297,7 +298,7 @@ public class GeneralPermissionsCommands implements CommandExecutor{
 	}
 
 	//Reloads a player's permissions. Called after /promote, /demote, and /setrank
-	private void reloadPlayer(Player player, String world){
+	private final void reloadPlayer(Player player, String world){
 		//Removes existing permissions and prefix
 		UUID pu = player.getUniqueId();
 		player.removeAttachment(GeneralPermissions.players.get(pu));
@@ -314,7 +315,7 @@ public class GeneralPermissionsCommands implements CommandExecutor{
 	}
 
 	//Parses player file and acquires the assigned rank
-	public static String getRank(UUID pu){
+	public final static String getRank(UUID pu){
 		File playerFile = new File(playersFolder, pu + ".txt");
 		String rest = "";
 		if (playerFile.exists()){
@@ -338,7 +339,7 @@ public class GeneralPermissionsCommands implements CommandExecutor{
 	}
 
 	//Used to set a new rank. Called with /promote, /demote, and /setrank
-	public static void setRank(UUID player, String oldRank, String newRank){
+	public final static void setRank(UUID player, String oldRank, String newRank){
 		try{
 			File playerFile = new File(playersFolder, player + ".txt");
 			BufferedReader reader = new BufferedReader(new FileReader(playerFile));
